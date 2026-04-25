@@ -1,147 +1,61 @@
-# pi-package-template
+# pi-execution-time
 
-GitHub repository template for [pi](https://github.com/badlogic/pi-mono) packages. Use it to ship extensions, skills, prompt templates, and themes through GitHub or npm.
+[pi](https://github.com/badlogic/pi-mono) package that adds a live task execution timer to the footer.
 
-## Use this template
+The timer starts when a prompt begins running and counts up until the agent finishes. It renders as a compact status item in the bottom bar next to pi's built-in cost and context usage indicators.
 
-1. Click **Use this template** on GitHub, or create from the CLI:
-
-   ```bash
-   gh repo create lukaspanni/my-pi-package --template lukaspanni/pi-package-template --public --clone
-   ```
-
-2. Rename package metadata in `package.json`:
-   - `name`
-   - `description`
-   - `repository.url`
-   - `author`
-   - `keywords`
-
-3. Replace or remove the sample resources:
-   - `extensions/hello.ts`
-   - `skills/example-skill/SKILL.md`
-   - `prompts/review-package.md`
-   - `themes/package-template-dark.json`
-
-4. Install and validate:
-
-   ```bash
-   npm install
-   npm run validate
-   ```
-
-## Package structure
-
-```text
-.
-├── extensions/                 # TypeScript extensions loaded by pi
-│   └── hello.ts                # sample /hello command and hello_package tool
-├── skills/                     # Agent Skills; each folder has SKILL.md
-│   └── example-skill/
-│       └── SKILL.md
-├── prompts/                    # Slash prompt templates; filename = command
-│   └── review-package.md       # /review-package
-├── themes/                     # pi TUI themes
-│   └── package-template-dark.json
-├── .github/workflows/
-│   └── publish.yml             # tag-based npm publish workflow
-├── package.json                # npm metadata and pi manifest
-└── tsconfig.json               # TypeScript integration for extensions
-```
-
-## Install the package in pi
+## Install
 
 From GitHub:
 
 ```bash
-pi install https://github.com/lukaspanni/pi-package-template
+pi install https://github.com/lukaspanni/pi-execution-time
 ```
 
 From npm after publishing:
 
 ```bash
-pi install npm:pi-package-template
+pi install npm:pi-execution-time
 ```
 
-For local development, run pi with the extension directly:
+## Usage
+
+Reload or restart pi after installation. When the agent is working, the footer shows a live timer:
+
+```text
+⏱ 4.2s
+```
+
+When the agent finishes, it keeps the final duration visible:
+
+```text
+✓ task 18s
+```
+
+Longer durations are formatted as `1m 05s` or `1h 02m 03s`.
+
+## Local development
 
 ```bash
-pi -e ./extensions/hello.ts
+npm install
+npm run validate
+pi -e ./extensions/execution-time.ts
 ```
 
-Or install the whole local package:
+## Package contents
 
-```bash
-pi install ./path/to/pi-package-template
-```
+- `extensions/execution-time.ts` - registers the footer status timer
 
-## Included examples
+## Publishing
 
-### Extension
-
-`extensions/hello.ts` demonstrates:
-
-- importing `ExtensionAPI` from `@mariozechner/pi-coding-agent`
-- registering a slash command (`/hello`)
-- registering a typed LLM tool (`hello_package`) with `typebox`
-
-### Skill
-
-`skills/example-skill/SKILL.md` follows the Agent Skills shape used by pi:
-
-- lowercase hyphenated skill name
-- `description` frontmatter for discovery
-- instructions that can reference files relative to the skill directory
-
-### Prompt template
-
-`prompts/review-package.md` becomes `/review-package` in pi and demonstrates frontmatter plus `$ARGUMENTS`.
-
-### Theme
-
-`themes/package-template-dark.json` includes all required pi theme tokens and a schema URL for editor validation.
-
-## npm scripts
-
-```bash
-npm run typecheck   # tsc --noEmit over extensions/**/*.ts
-npm run pack:check  # npm pack --dry-run to inspect published files
-npm run validate    # typecheck + pack check
-```
-
-## Publishing to npm
-
-The included workflow publishes when you push a `v*` tag or run it manually.
-
-Recommended release flow:
+The included GitHub Actions workflow publishes on `v*` tags or manual dispatch:
 
 ```bash
 npm version patch
 git push --follow-tags
 ```
 
-The workflow uses npm trusted publishing/provenance (`id-token: write`). Configure the package on npm for trusted publishing, or replace the publish step with `NODE_AUTH_TOKEN`-based publishing if preferred.
-
-## pi manifest
-
-`package.json` declares all resource directories explicitly:
-
-```json
-"pi": {
-  "extensions": ["./extensions"],
-  "skills": ["./skills"],
-  "prompts": ["./prompts"],
-  "themes": ["./themes"]
-}
-```
-
-Pi can also auto-discover conventional directories, but keeping the manifest explicit makes package contents obvious.
-
-## Notes
-
-- Runtime dependencies used by extensions belong in `dependencies`.
-- pi-provided packages (`@mariozechner/pi-coding-agent`, `@mariozechner/pi-ai`, `@mariozechner/pi-agent-core`, `@mariozechner/pi-tui`, `typebox`) should be `peerDependencies` with `"*"`.
-- Keep `files` in `package.json` aligned with resources you want to publish.
+Configure npm trusted publishing for this repository, or adapt `.github/workflows/publish.yml` to use `NODE_AUTH_TOKEN`.
 
 ## License
 

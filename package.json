@@ -1,12 +1,12 @@
 {
-  "name": "pi-package-template",
+  "name": "pi-execution-time",
   "version": "0.1.0",
-  "description": "Template for pi packages with extensions, skills, prompts, and themes.",
+  "description": "Pi extension that shows prompt execution time in the footer while the agent works.",
   "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lukaspanni/pi-package-template"
+    "url": "https://github.com/lukaspanni/pi-execution-time"
   },
   "author": {
     "name": "Lukas Panni",
@@ -16,13 +16,11 @@
     "pi-package",
     "pi",
     "pi-extension",
-    "agent-skill"
+    "timer",
+    "execution-time"
   ],
   "files": [
     "extensions",
-    "skills",
-    "prompts",
-    "themes",
     "README.md",
     "LICENSE"
   ],
@@ -35,26 +33,15 @@
     "./package.json": "./package.json"
   },
   "peerDependencies": {
-    "@mariozechner/pi-coding-agent": "*",
-    "typebox": "*"
+    "@mariozechner/pi-coding-agent": "*"
   },
   "devDependencies": {
     "@mariozechner/pi-coding-agent": "*",
-    "typebox": "^1.0.58",
     "typescript": "^5.9.3"
   },
   "pi": {
     "extensions": [
       "./extensions"
-    ],
-    "skills": [
-      "./skills"
-    ],
-    "prompts": [
-      "./prompts"
-    ],
-    "themes": [
-      "./themes"
     ]
   }
 }
