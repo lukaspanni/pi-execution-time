@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@mariozechner/pi-coding-agent": [
+        "node_modules/@mariozechner/pi-coding-agent/dist/index.d.ts"
+      ]
+    },
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["extensions/**/*.ts"]
+}

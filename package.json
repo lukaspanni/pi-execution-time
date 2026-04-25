@@ -1,0 +1,60 @@
+{
+  "name": "pi-package-template",
+  "version": "0.1.0",
+  "description": "Template for pi packages with extensions, skills, prompts, and themes.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lukaspanni/pi-package-template"
+  },
+  "author": {
+    "name": "Lukas Panni",
+    "url": "https://github.com/lukaspanni"
+  },
+  "keywords": [
+    "pi-package",
+    "pi",
+    "pi-extension",
+    "agent-skill"
+  ],
+  "files": [
+    "extensions",
+    "skills",
+    "prompts",
+    "themes",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "pack:check": "npm pack --dry-run",
+    "validate": "npm run typecheck && npm run pack:check"
+  },
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-coding-agent": "*",
+    "typebox": "*"
+  },
+  "devDependencies": {
+    "@mariozechner/pi-coding-agent": "*",
+    "typebox": "^1.0.58",
+    "typescript": "^5.9.3"
+  },
+  "pi": {
+    "extensions": [
+      "./extensions"
+    ],
+    "skills": [
+      "./skills"
+    ],
+    "prompts": [
+      "./prompts"
+    ],
+    "themes": [
+      "./themes"
+    ]
+  }
+}
