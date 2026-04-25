@@ -16,7 +16,6 @@ concurrency:
 
 jobs:
   publish:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
 
     steps:
@@ -40,4 +39,4 @@ jobs:
         run: npm run pack:check
 
       - name: Publish to npm
-        run: npm publish --provenance --access public
+        run: npm publish

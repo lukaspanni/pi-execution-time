@@ -46,17 +46,6 @@ pi -e ./extensions/execution-time.ts
 
 - `extensions/execution-time.ts` - registers the footer status timer
 
-## Publishing
-
-The included GitHub Actions workflow publishes on `v*` tags or manual dispatch:
-
-```bash
-npm version patch
-git push --follow-tags
-```
-
-Configure npm trusted publishing for this repository, or adapt `.github/workflows/publish.yml` to use `NODE_AUTH_TOKEN`.
-
 ## License
 
 MIT
