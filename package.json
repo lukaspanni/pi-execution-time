@@ -41,7 +41,7 @@
   },
   "pi": {
     "extensions": [
-      "./extensions"
+      "./extensions/execution-time.ts"
     ]
   }
 }
