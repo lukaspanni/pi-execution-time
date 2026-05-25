@@ -25,11 +25,13 @@ export default function (pi: ExtensionAPI) {
 		ctx.ui.setStatus(STATUS_KEY, icon + text);
 	}
 
-	function renderDone(ctx: ExtensionContext, elapsedMs: number) {
+	function renderDone(ctx: ExtensionContext, elapsedMs: number, completedAt: Date) {
 		const icon = ctx.ui.theme.fg("success", "✓");
 		const label = ctx.ui.theme.fg("dim", " task ");
-		const value = ctx.ui.theme.fg("muted", formatElapsed(elapsedMs));
-		ctx.ui.setStatus(STATUS_KEY, icon + label + value);
+		const duration = ctx.ui.theme.fg("muted", formatElapsed(elapsedMs));
+		const separator = ctx.ui.theme.fg("dim", " · ");
+		const completedTime = ctx.ui.theme.fg("muted", formatCompletedAt(completedAt));
+		ctx.ui.setStatus(STATUS_KEY, icon + label + duration + separator + completedTime);
 	}
 
 	pi.on("agent_start", async (_event, ctx) => {
@@ -46,9 +48,10 @@ export default function (pi: ExtensionAPI) {
 	pi.on("agent_end", async (_event, ctx) => {
 		if (!timer) return;
 
-		const elapsedMs = Date.now() - timer.startedAt;
+		const completedAt = new Date();
+		const elapsedMs = completedAt.getTime() - timer.startedAt;
 		stopTimer();
-		renderDone(ctx, elapsedMs);
+		renderDone(ctx, elapsedMs, completedAt);
 	});
 
 	pi.on("session_shutdown", async (_event, ctx) => {
@@ -79,6 +82,10 @@ function formatElapsed(ms: number) {
 	}
 
 	return `${roundedSeconds}s`;
+}
+
+function formatCompletedAt(date: Date) {
+	return `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
 }
 
 function pad2(value: number) {
