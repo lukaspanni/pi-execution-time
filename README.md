@@ -26,13 +26,13 @@ Reload or restart pi after installation. When the agent is working, the footer s
 ⏱ 4.2s
 ```
 
-When the agent finishes, it keeps the final duration visible:
+When the agent finishes, it keeps the final duration and completion time visible:
 
 ```text
-✓ task 18s
+✓ task 18s · 17:42
 ```
 
-Longer durations are formatted as `1m 05s` or `1h 02m 03s`.
+Longer durations are formatted as `1m 05s` or `1h 02m 03s`. Completion time is shown as local `HH:mm`.
 
 ## Local development
 
