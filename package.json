@@ -36,7 +36,7 @@
     "@mariozechner/pi-coding-agent": "*"
   },
   "devDependencies": {
-    "@mariozechner/pi-coding-agent": "*",
+    "@mariozechner/pi-coding-agent": "^0.73.1",
     "typescript": "^5.9.3"
   },
   "pi": {
