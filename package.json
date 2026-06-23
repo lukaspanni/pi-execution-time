@@ -32,16 +32,16 @@
   "exports": {
     "./package.json": "./package.json"
   },
-  "peerDependencies": {
-    "@mariozechner/pi-coding-agent": "*"
-  },
   "devDependencies": {
-    "@mariozechner/pi-coding-agent": "^0.73.1",
-    "typescript": "^5.9.3"
+    "@earendil-works/pi-coding-agent": "^0.79.10",
+    "typescript": "^6.0.3"
   },
   "pi": {
     "extensions": [
       "./extensions/execution-time.ts"
     ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
   }
 }
