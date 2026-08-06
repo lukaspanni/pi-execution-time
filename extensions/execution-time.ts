@@ -39,6 +39,26 @@ export default function (pi: ExtensionAPI) {
 		totalInterval = undefined;
 	}
 
+	function stopTimers() {
+		stopTaskTimer();
+		stopTotalTimer();
+	}
+
+	function isStaleContextError(error: unknown) {
+		return error instanceof Error && error.message.startsWith("This extension ctx is stale");
+	}
+
+	function renderWithContext(ctx: ExtensionContext, render: () => void) {
+		try {
+			render();
+		} catch (error) {
+			// A timer can already be queued while pi replaces/reloads a session.
+			// Never let a stale ExtensionContext crash the host process.
+			if (!isStaleContextError(error)) throw error;
+			stopTimers();
+		}
+	}
+
 	function renderTaskRunning(ctx: ExtensionContext) {
 		if (!taskTimer) return;
 		const elapsedMs = Date.now() - taskTimer.startedAt;
@@ -87,6 +107,17 @@ export default function (pi: ExtensionAPI) {
 		},
 	);
 
+	// Stop callbacks before session replacement starts invalidating the old ctx.
+	// session_shutdown also performs cleanup, but replacement can yield while
+	// other shutdown handlers run, allowing a captured ctx to fire in between.
+	const stopTimersBeforeReplacement = stopTimers;
+	pi.on("session_before_switch", async () => {
+		stopTimersBeforeReplacement();
+	});
+	pi.on("session_before_fork", async () => {
+		stopTimersBeforeReplacement();
+	});
+
 	pi.on("session_start", async (_event, ctx) => {
 		sessionStartedAt = Date.now();
 		activeStep = undefined;
@@ -94,8 +125,8 @@ export default function (pi: ExtensionAPI) {
 		completedSteps = [];
 		nextStep = getNextStep(ctx);
 		stopTotalTimer();
-		totalInterval = setInterval(() => renderTotal(ctx), TOTAL_UPDATE_INTERVAL_MS);
-		renderTotal(ctx);
+		totalInterval = setInterval(() => renderWithContext(ctx, () => renderTotal(ctx)), TOTAL_UPDATE_INTERVAL_MS);
+		renderWithContext(ctx, () => renderTotal(ctx));
 	});
 
 	pi.on("context", async (event) => ({
@@ -120,10 +151,10 @@ export default function (pi: ExtensionAPI) {
 
 		taskTimer = {
 			startedAt: Date.now(),
-			interval: setInterval(() => renderTaskRunning(ctx), TASK_UPDATE_INTERVAL_MS),
+			interval: setInterval(() => renderWithContext(ctx, () => renderTaskRunning(ctx)), TASK_UPDATE_INTERVAL_MS),
 		};
 
-		renderTaskRunning(ctx);
+		renderWithContext(ctx, () => renderTaskRunning(ctx));
 	});
 
 	pi.on("message_start", async (event) => {
@@ -153,8 +184,7 @@ export default function (pi: ExtensionAPI) {
 	});
 
 	pi.on("session_shutdown", async (_event, ctx) => {
-		stopTaskTimer();
-		stopTotalTimer();
+		stopTimersBeforeReplacement();
 		ctx.ui.setStatus(TASK_STATUS_KEY, undefined);
 		ctx.ui.setStatus(TOTAL_STATUS_KEY, undefined);
 	});
