@@ -38,6 +38,17 @@ The bottom bar also shows the total elapsed session time and keeps updating it e
 Σ session 12m 04s
 ```
 
+Use `/session-timer` to toggle the session timer, or set it explicitly:
+
+```text
+/session-timer off
+/session-timer on
+```
+
+The session timer is on by default. Turning it off hides it and stops its footer updates; turning it back on shows the elapsed time since session start, including time spent hidden. Task timers and step history are unaffected.
+
+The choice is saved in the current session and restored on reload or resume. New sessions default to on, and navigating with `/tree` restores the choice recorded on that branch.
+
 Completed standard user prompts are rendered above the next standard user prompt:
 
 ```text
@@ -48,6 +59,8 @@ Steering messages are ignored for step history. Longer durations are formatted a
 
 ## Local development
 
+Validation runs typechecking, timer tests, and an npm packaging dry run. Tests require Node.js 22.6 or newer.
+
 ```bash
 npm install
 npm run validate
@@ -56,7 +69,7 @@ pi -e ./extensions/execution-time.ts
 
 ## Package contents
 
-- `extensions/execution-time.ts` - registers the footer status timer
+- `extensions/execution-time.ts` - registers the footer status timers and `/session-timer` command
 
 ## License
 

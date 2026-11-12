@@ -4,6 +4,7 @@ import { Text } from "@earendil-works/pi-tui";
 const TASK_STATUS_KEY = "execution-time";
 const TOTAL_STATUS_KEY = "zz-execution-time-total";
 const STEP_MESSAGE_TYPE = "execution-time-step";
+const SESSION_TIMER_STATE_TYPE = "execution-time-session-timer";
 const TASK_UPDATE_INTERVAL_MS = 250;
 const TOTAL_UPDATE_INTERVAL_MS = 1000;
 
@@ -20,6 +21,7 @@ type CompletedStep = {
 
 export default function (pi: ExtensionAPI) {
 	let sessionStartedAt = Date.now();
+	let sessionTimerEnabled = true;
 	let totalInterval: ReturnType<typeof setInterval> | undefined;
 	let taskTimer: TimerState | undefined;
 	let activeStep: { step: number; startedAt: number } | undefined;
@@ -57,10 +59,21 @@ export default function (pi: ExtensionAPI) {
 	}
 
 	function renderTotal(ctx: ExtensionContext) {
+		if (!sessionTimerEnabled) return;
 		const icon = ctx.ui.theme.fg("accent", "Σ");
 		const label = ctx.ui.theme.fg("dim", " session ");
 		const elapsed = ctx.ui.theme.fg("muted", formatElapsed(Date.now() - sessionStartedAt));
 		ctx.ui.setStatus(TOTAL_STATUS_KEY, icon + label + elapsed);
+	}
+
+	function applySessionTimer(ctx: ExtensionContext) {
+		stopTotalTimer();
+		if (!sessionTimerEnabled) {
+			ctx.ui.setStatus(TOTAL_STATUS_KEY, undefined);
+			return;
+		}
+		renderTotal(ctx);
+		totalInterval = setInterval(() => renderTotal(ctx), TOTAL_UPDATE_INTERVAL_MS);
 	}
 
 	function renderCompletedSteps() {
@@ -87,15 +100,44 @@ export default function (pi: ExtensionAPI) {
 		},
 	);
 
+	pi.registerCommand("session-timer", {
+		description: "Show or hide the session timer: on, off, or no argument to toggle",
+		getArgumentCompletions: (prefix) => {
+			const items = ["on", "off"]
+				.filter((value) => value.startsWith(prefix.toLowerCase()))
+				.map((value) => ({ value, label: value }));
+			return items.length > 0 ? items : null;
+		},
+		handler: async (args, ctx) => {
+			const mode = args.trim().toLowerCase();
+			if (mode !== "" && mode !== "on" && mode !== "off") {
+				ctx.ui.notify("Usage: /session-timer [on|off] (no argument toggles)", "error");
+				return;
+			}
+
+			const enabled = mode === "" ? !sessionTimerEnabled : mode === "on";
+			if (enabled !== sessionTimerEnabled) {
+				sessionTimerEnabled = enabled;
+				pi.appendEntry(SESSION_TIMER_STATE_TYPE, { enabled });
+				applySessionTimer(ctx);
+			}
+			ctx.ui.notify(`Session timer ${sessionTimerEnabled ? "on" : "off"}`, "info");
+		},
+	});
+
 	pi.on("session_start", async (_event, ctx) => {
 		sessionStartedAt = Date.now();
 		activeStep = undefined;
 		standardInputsQueued = 0;
 		completedSteps = [];
 		nextStep = getNextStep(ctx);
-		stopTotalTimer();
-		totalInterval = setInterval(() => renderTotal(ctx), TOTAL_UPDATE_INTERVAL_MS);
-		renderTotal(ctx);
+		sessionTimerEnabled = getSessionTimerEnabled(ctx);
+		applySessionTimer(ctx);
+	});
+
+	pi.on("session_tree", async (_event, ctx) => {
+		sessionTimerEnabled = getSessionTimerEnabled(ctx);
+		applySessionTimer(ctx);
 	});
 
 	pi.on("context", async (event) => ({
@@ -158,6 +200,16 @@ export default function (pi: ExtensionAPI) {
 		ctx.ui.setStatus(TASK_STATUS_KEY, undefined);
 		ctx.ui.setStatus(TOTAL_STATUS_KEY, undefined);
 	});
+}
+
+function getSessionTimerEnabled(ctx: ExtensionContext) {
+	let enabled = true;
+	for (const entry of ctx.sessionManager.getBranch()) {
+		if (entry.type !== "custom" || entry.customType !== SESSION_TIMER_STATE_TYPE) continue;
+		const value = (entry.data as { enabled?: unknown } | undefined)?.enabled;
+		if (typeof value === "boolean") enabled = value;
+	}
+	return enabled;
 }
 
 function getNextStep(ctx: ExtensionContext) {

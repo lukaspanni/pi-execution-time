@@ -25,9 +25,10 @@
     "LICENSE"
   ],
   "scripts": {
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "pack:check": "npm pack --dry-run",
-    "validate": "npm run typecheck && npm run pack:check"
+    "validate": "npm run typecheck && npm test && npm run pack:check"
   },
   "exports": {
     "./package.json": "./package.json"
